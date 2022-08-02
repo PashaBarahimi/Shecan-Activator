@@ -22,16 +22,15 @@ function enableShecanDns() {
     if isShecanDnsSet; then
         echo 'Shecan dns is already enabled!'
     else
+        cp /etc/resolv.conf /etc/resolv.conf.bak
         dnsLineNum=$(grep -n "^nameserver" /etc/resolv.conf | cut -d: -f1)
         if [ -z "$dnsLineNum" ]; then
-            echo "$shecan_comment" >> /etc/resolv.conf
-            if [ $? -eq 0 ]; then return 1; fi
-            echo "$dns_string" >> /etc/resolv.conf
+            echo "$shecan_comment" >> /etc/resolv.conf || return 1
+            echo "$dns_string" >> /etc/resolv.conf || return 1
         else
-            sed s/"^nameserver"/"# nameserver"/g /etc/resolv.conf > /tmp/resolv.conf
-            sed -i "${dnsLineNum}i\\${dns_string}" /tmp/resolv.conf
-            sed "${dnsLineNum}i\\${shecan_comment}" /tmp/resolv.conf > /etc/resolv.conf
-            if [ $? -ne 0 ]; then return 1; fi
+            sed s/"^nameserver"/"# nameserver"/g /etc/resolv.conf > /tmp/resolv.conf || return 1
+            sed -i "${dnsLineNum}i\\${dns_string}" /tmp/resolv.conf || return 1
+            sed "${dnsLineNum}i\\${shecan_comment}" /tmp/resolv.conf > /etc/resolv.conf || return 1
             rm /tmp/resolv.conf
         fi
         echo 'Shecan dns is enabled successfully'
@@ -41,10 +40,10 @@ function enableShecanDns() {
 
 function disableShecanDns() {
     if isShecanDnsSet; then
-        sed  /"$shecan_comment"/d /etc/resolv.conf > /tmp/resolv.conf
-        sed -i /"$dns_string"/d /tmp/resolv.conf
-        sed s/"^# nameserver"/"nameserver"/g /tmp/resolv.conf > /etc/resolv.conf
-        if [ $? -ne 0 ]; then return 1; fi
+        cp /etc/resolv.conf /etc/resolv.conf.bak
+        sed  /"$shecan_comment"/d /etc/resolv.conf > /tmp/resolv.conf || return 1
+        sed -i /"$dns_string"/d /tmp/resolv.conf || return 1
+        sed s/"^# nameserver"/"nameserver"/g /tmp/resolv.conf > /etc/resolv.conf || return 1
         rm /tmp/resolv.conf
         echo 'Shecan dns is disabled successfully'
     else
