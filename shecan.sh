@@ -36,7 +36,6 @@ function enableShecanDns() {
         echo 'Shecan dns is enabled successfully'
     fi
     return 0
-    return 0
 }
 
 function disableShecanDns() {
